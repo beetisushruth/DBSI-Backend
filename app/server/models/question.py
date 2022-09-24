@@ -4,6 +4,9 @@ from pydantic import BaseModel, Field
 
 
 class QuestionSchema(BaseModel):
+    """
+    Schema for Question model
+    """
     title: str = Field(...)
     accepted_answer_id: int = Field(...)
     answer_count: int = Field(...)
@@ -35,6 +38,9 @@ class QuestionSchema(BaseModel):
 
 
 class UpdateQuestionModel(BaseModel):
+    """
+    Schema for updating a question
+    """
     title: Optional[str]
     accepted_answer_id: Optional[int]
     answer_count: Optional[int]
@@ -66,6 +72,12 @@ class UpdateQuestionModel(BaseModel):
 
 
 def ResponseModel(data, message):
+    """
+    Schema for response model
+    :param data: data to be returned
+    :param message: message to be returned
+    :return: response model
+    """
     return {
         "data": [data],
         "code": 200,
@@ -74,4 +86,11 @@ def ResponseModel(data, message):
 
 
 def ErrorResponseModel(error, code, message):
+    """
+    Schema for error response model
+    :param error: error to be returned
+    :param code:  code to be returned
+    :param message: message to be returned
+    :return: error response model
+    """
     return {"error": error, "code": code, "message": message}
