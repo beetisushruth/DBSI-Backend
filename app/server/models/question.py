@@ -7,17 +7,18 @@ class QuestionSchema(BaseModel):
     """
     Schema for Question model
     """
+    id: str = Field(...)
     title: str = Field(...)
-    accepted_answer_id: int = Field(...)
-    answer_count: int = Field(...)
-    comment_count: int = Field(...)
-    creation_date: str = Field(...)
-    favorite_count: int = Field(...)
+    accepted_answer_id: Optional[int]
+    answer_count: Optional[int]
+    comment_count: Optional[int]
+    creation_date: Optional[str]
+    favorite_count: Optional[int]
     owner_user_id: int = Field(...)
-    score: int = Field(...)
-    view_count: int = Field(...)
-    related_posts: List[int] = Field(...)
-    tags: List[str] = Field(...)
+    score: Optional[int]
+    view_count: Optional[int]
+    related_posts: Optional[List[int]]
+    tags: Optional[List[str]]
 
     class Config:
         schema_extra = {
@@ -41,6 +42,7 @@ class UpdateQuestionModel(BaseModel):
     """
     Schema for updating a question
     """
+    id: str = Field(...)
     title: Optional[str]
     accepted_answer_id: Optional[int]
     answer_count: Optional[int]

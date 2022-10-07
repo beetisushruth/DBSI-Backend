@@ -22,7 +22,7 @@ router = APIRouter()
 
 # Basic CRUD operations
 
-@router.post("/", response_description="Question data added into the database")
+@router.post("/add", response_description="Question data added into the database")
 async def add_question_data(question: QuestionSchema = Body(...)):
     question = jsonable_encoder(question)
     new_question = await add_question(question)
@@ -45,13 +45,20 @@ async def get_question_data(id):
     return ErrorResponseModel("An error occurred.", 404, "Question doesn't exist.")
 
 
-@router.post("/", response_description="Question data updated in the database")
-async def update_question_data(id: str, req: UpdateQuestionModel = Body(...)):
+@router.post("/update", response_description="Question data updated in the database")
+async def update_question_data(req: UpdateQuestionModel = Body(...)):
     req = {k: v for k, v in req.dict().items() if v is not None}
-    updated_question = await update_question(id, req)
+    if 'id' not in req:
+        return ErrorResponseModel(
+            "An error occurred",
+            404,
+            "There was an error updating the question data.",
+        )
+    # print(req)
+    updated_question = await update_question(req['id'], req)
     if updated_question:
         return ResponseModel(
-            "Question with ID: {} name update is successful".format(id),
+            "Question with ID: {} update is successful".format(req['id']),
             "Question name updated successfully",
         )
     return ErrorResponseModel(
@@ -110,6 +117,48 @@ async def get_popular_unanswered_questions_by_tag(tag: str, count: str):
     popular_unanswered_questions_by_tag[2]['$match']['tags']['$eq'] = tag
     popular_unanswered_questions_by_tag[4]['$limit'] = int(count)
     questions = await retrieve_questions_by_aggregation_pipeline(popular_unanswered_questions_by_tag)
+    if questions:
+        return ResponseModel(questions, "Questions data retrieved successfully")
+    return ResponseModel(questions, "Empty list returned")
+
+
+answered_questions_for_tag = [
+    {
+        '$match': {
+            'tags': {
+                '$exists': True
+            }
+        }
+    }, {
+        '$unwind': {
+            'path': '$tags'
+        }
+    }, {
+        '$match': {
+            'tags': 'python',
+            'accepted_answer_id': {
+                '$exists': True
+            }
+        }
+    }, {
+        '$group': {
+            '_id': None,
+            'count': {
+                '$sum': 1
+            }
+        }
+    }, {
+        '$project': {
+            '_id': 0
+        }
+    }
+]
+
+
+@router.get("/answered-questions-for-tag/{tag}", response_description="Questions retrieved")
+async def get_answered_questions_for_tag(tag: str):
+    answered_questions_for_tag[2]['$match']['tags'] = tag
+    questions = await retrieve_questions_by_aggregation_pipeline(answered_questions_for_tag)
     if questions:
         return ResponseModel(questions, "Questions data retrieved successfully")
     return ResponseModel(questions, "Empty list returned")

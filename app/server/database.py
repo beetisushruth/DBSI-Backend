@@ -21,6 +21,9 @@ async def add_question(data: dict) -> dict:
     :param data: question object
     :return: added question
     """
+    data['_id'] = int(data['id'])
+    # remove id from data
+    del data['id']
     question = await questions_collection.insert_one(data)
     new_question = await questions_collection.find_one({"_id": question.inserted_id})
     return new_question
@@ -58,10 +61,10 @@ async def update_question(id: str, data: dict):
     """
     if len(data) < 1:
         return False
-    question = await questions_collection.find_one({"_id": id})
+    question = await questions_collection.find_one({"_id": int(id)})
     if question:
         updated_question = await questions_collection.update_one(
-            {"_id": ObjectId(id)}, {"$set": data}
+            {"_id": int(id)}, {"$set": data}
         )
         if updated_question:
             return True
@@ -74,9 +77,9 @@ async def delete_question(id: str):
     :param id: id of the question
     :return: true if deleted, false if not found
     """
-    question = await questions_collection.find_one({"_id": ObjectId(id)})
+    question = await questions_collection.find_one({"_id": int(id)})
     if question:
-        await questions_collection.delete_one({"_id": ObjectId(id)})
+        await questions_collection.delete_one({"_id": int(id)})
         return True
 
 
